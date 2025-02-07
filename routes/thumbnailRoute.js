@@ -1,0 +1,37 @@
+import express from 'express'
+import { uploadThumbnail, 
+    filterThumbnail,
+    getThumbnails, 
+    getThumbnailDetails, 
+    getUploadedThumbnails,
+    updateImpression, 
+    saveThumbnail, 
+    getSavedThumbnail, 
+    downloadThumbnail,
+    updateCtr,
+    searchedThumbnail,
+   
+
+} from '../controllers/thumbnail.js'
+import authMiddleware from '../middleware/authMiddleware.js'
+import { upload } from '../middleware/multer.js';
+
+const router = express.Router();
+
+//POST
+router.post('/upload', upload.single('imageUrl'), authMiddleware, uploadThumbnail);
+router.post('/save/:thumbnailId', authMiddleware, saveThumbnail)
+router.post('/impression/:thumbnailId', authMiddleware, updateImpression)
+router.post('/ctr/:thumbnailId', authMiddleware, updateCtr)
+
+//GET
+router.get('/search/', authMiddleware, searchedThumbnail)
+router.get('/filter/:category', authMiddleware, filterThumbnail)
+router.get('/download/:thumbnailId', authMiddleware, downloadThumbnail)
+router.get('/saved', authMiddleware, getSavedThumbnail)
+router.get('/', authMiddleware, getThumbnails);
+router.get('/myUploadedThumbnail', authMiddleware, getUploadedThumbnails)
+router.get('/:id', authMiddleware, getThumbnailDetails);
+
+
+export default router
