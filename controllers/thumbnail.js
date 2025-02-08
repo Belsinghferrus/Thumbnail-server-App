@@ -57,13 +57,13 @@ const uploadThumbnail = async (req, res) => {
   }
 };
 
-// Get all thumbnails for the logged-in user
+// Get all thumbnails for all user
 const getThumbnails = async (req, res) => {
   try {
     const thumbnails = await Thumbnail.find().populate(
       "user",
       "username profilePicture"
-    );
+    ).sort({ createdAt: -1 });
     res.status(200).json(thumbnails);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });

@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
-import generateToken from "../lib/utils.js";
+import generateToken from "../lib/generateToken.js";
 import cloudinary from "../lib/cloudinary.js";
+import Thumbnail from "../models/thumbnailModel.js";
 
 // Register a new user
 const register = async (req, res) => {
@@ -44,6 +45,9 @@ const register = async (req, res) => {
 };
 const checkAuth = (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized. Please log in." });
+    }
     res.status(200).json(req.user);
   } catch (error) {
     console.log("Error in checkAuth controller", error.message);
@@ -72,10 +76,6 @@ const login = async (req, res) => {
     // Generate JWT token
     generateToken(user._id, res);
 
-    // const payload = { id: user._id };
-    // const token = jwt.sign(payload, process.env.JWT_SECRET, {
-    //   // expiresIn: "1h",
-    // });
 
     res.status(200).json({
       _id: user._id,
@@ -91,7 +91,13 @@ const login = async (req, res) => {
 
 const logout = (req, res) => {
   try {
-    res.cookie("jwt", "", { maxAge: 0 });
+    res.cookie("jwt", "", { 
+      maxAge: 0 ,
+      httpOnly: true, 
+      secure: true, 
+      sameSite: "Lax",
+      path: "/", 
+    });
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.log("Error in logout controller");
@@ -101,7 +107,6 @@ const logout = (req, res) => {
 
 const updateProfile = async (req, res) => {
   const { id } = req.params;
-  // const _id = "67974777c5e4b90f90c0ae87"
   const { username, bio } = req.body;
 
   try {
@@ -153,4 +158,51 @@ const updateProfile = async (req, res) => {
   }
 };
 
-export { login, register, checkAuth, logout, updateProfile };
+const googleAuth =  (req, res) => {
+  try {
+    const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+    const params = new URLSearchParams({
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      redirect_uri: 'http://localhost:5000/api/auth/google/callback',
+      response_type: 'code',
+      scope: 'profile email',
+    });
+    res.json({ redirectUrl: `${googleAuthUrl}?${params.toString()}` });
+  } catch (error) {
+    console.log("Error in googleAuth server", error);
+    res.status(500).json({message: "Error in google Auth"})
+  }
+}
+
+const googleAuthCallback = async (req, res) => {
+  try {
+   
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication failed" });
+    }
+    const { email } = req.user;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+      generateToken(user._id, res);
+      res.redirect(process.env.GOOGLE_REDIRECT);
+  } catch (error) {
+    res.status(500).json({message: "Error in GoogleAuth Callback", error})
+  }
+};
+
+const getUserDetails = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password -savedThumbnails');
+    const thumbnails = await Thumbnail.find({user: user._id})
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.status(200).json({ user, thumbnails });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching user details", error: error.message });
+  }
+};
+
+export { login, register, checkAuth, logout, updateProfile, googleAuth, googleAuthCallback, getUserDetails };

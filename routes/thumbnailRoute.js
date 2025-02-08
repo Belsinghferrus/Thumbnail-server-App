@@ -25,11 +25,11 @@ router.post('/impression/:thumbnailId', authMiddleware, updateImpression)
 router.post('/ctr/:thumbnailId', authMiddleware, updateCtr)
 
 //GET
-router.get('/search/', authMiddleware, searchedThumbnail)
-router.get('/filter/:category', authMiddleware, filterThumbnail)
+router.get('/search/', searchedThumbnail)
+router.get('/filter/:category',  filterThumbnail)
 router.get('/download/:thumbnailId', authMiddleware, downloadThumbnail)
 router.get('/saved', authMiddleware, getSavedThumbnail)
-router.get('/', authMiddleware, getThumbnails);
+router.get('/',  getThumbnails);
 router.get('/myUploadedThumbnail', authMiddleware, getUploadedThumbnails)
 router.get('/:id', authMiddleware, getThumbnailDetails);
 
