@@ -4,8 +4,9 @@ import Thumbnail from "../models/thumbnailModel.js";
 // Add a comment to a thumbnail
 const addComment = async (req, res) => {
   try {
-    const { text } = req.body;
-    const thumbnailId = req.params.thumbnailId;
+    const { content } = req.body;
+    const {thumbnailId} = req.params;
+    const userId = req.user._id;
 
     // Check if thumbnail exists
     const thumbnail = await Thumbnail.findById(thumbnailId);
@@ -13,15 +14,21 @@ const addComment = async (req, res) => {
       return res.status(404).json({ message: "Thumbnail not found" });
     }
 
+    if (!content) {
+      return res.status(400).json({ message: "Comment cannot be empty" });
+    }
+
+
     // Create new comment
     const comment = new Comment({
-      thumbnail: thumbnailId,
-      user: req.user.id,
-      text,
+      thumbnailId,
+      userId,
+      content,
     });
 
     await comment.save();
-    res.status(201).json(comment);
+    const populatedComment = await comment.populate('userId', 'username profilePicture');
+    res.status(201).json(populatedComment);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -30,14 +37,14 @@ const addComment = async (req, res) => {
 // Get all comments for a thumbnail
 const getComments = async (req, res) => {
   try {
-    const thumbnailId = req.params.thumbnailId;
+    const {thumbnailId} = req.params;
 
     // Fetch comments and populate user details
-    const comments = await Comment.find({ thumbnail: thumbnailId })
-      .populate("user", "username")
+    const comments = await Comment.find({ thumbnailId })
+      .populate( "userId", "username profilePicture", )
       .sort({ createdAt: -1 });
 
-    res.status(200).json(comments);
+     res.status(200).json(comments);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

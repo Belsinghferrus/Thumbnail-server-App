@@ -171,7 +171,7 @@ const updateImpression = async (req, res) => {
     }
     const lastUpdatedTime = thumbnail.updatedAt;
     const timeDifference = Date.now() - new Date(lastUpdatedTime).getTime();
-    if(timeDifference > 100000){
+    if(timeDifference > 30000){
       thumbnail.impressions += 1;
       await thumbnail.save();
       res.status(200).json({ message: "Impression updated" });

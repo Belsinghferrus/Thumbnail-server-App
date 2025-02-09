@@ -21,7 +21,7 @@ const router = express.Router();
 //POST
 router.post('/upload', upload.single('imageUrl'), authMiddleware, uploadThumbnail);
 router.post('/save/:thumbnailId', authMiddleware, saveThumbnail)
-router.post('/impression/:thumbnailId', authMiddleware, updateImpression)
+router.post('/impression/:thumbnailId',  updateImpression)
 router.post('/ctr/:thumbnailId', authMiddleware, updateCtr)
 
 //GET
