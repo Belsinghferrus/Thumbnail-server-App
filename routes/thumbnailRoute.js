@@ -10,7 +10,7 @@ import { uploadThumbnail,
     downloadThumbnail,
     updateCtr,
     searchedThumbnail,
-   
+    deleteThumbnail
 
 } from '../controllers/thumbnail.js'
 import authMiddleware from '../middleware/authMiddleware.js'
@@ -33,5 +33,8 @@ router.get('/',  getThumbnails);
 router.get('/myUploadedThumbnail', authMiddleware, getUploadedThumbnails)
 router.get('/:id', authMiddleware, getThumbnailDetails);
 
+
+//Delete
+router.delete('/delete/:id', authMiddleware, deleteThumbnail)
 
 export default router

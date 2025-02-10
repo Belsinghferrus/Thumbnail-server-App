@@ -205,4 +205,29 @@ const getUserDetails = async (req, res) => {
   }
 };
 
-export { login, register, checkAuth, logout, updateProfile, googleAuth, googleAuthCallback, getUserDetails };
+const changePassword = async(req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user._id);
+    
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (!user.password) {
+      return res.status(400).json({ message: "This account is linked to Google. Password change is not allowed." });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(oldPassword, user.password)
+
+    if(!isPasswordMatch){
+      return res.status(400).json({message: "Invalid Credentials"})
+    }
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.status(200).json({message: "Password updated successfully!"})
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
+export { login, register, checkAuth, logout, updateProfile, googleAuth, googleAuthCallback, getUserDetails, changePassword };

@@ -239,6 +239,43 @@ const filterThumbnail = async (req, res) => {
   }
 }
 
+//DELETE THUMBNAIL
+const deleteThumbnail = async (req, res) => {
+  try {
+    const {id} = req.params;
+
+    const thumbnail = await Thumbnail.findById(id)
+    if(!thumbnail) {
+      res.status(400).json({message: "Thumbnail not found"})
+    }
+
+    const thumbnailImage = thumbnail.imageUrl;
+    if(!thumbnailImage) {
+      res.status(400).json({message: "Thumbnail imageUrl not found"})
+    }
+    
+    const publicIdMatch = thumbnailImage.match(/\/([^/]+)\.[a-z]+$/i);
+    if (!publicIdMatch) {
+      return res.status(400).json({ message: "Invalid image URL format" });
+    }
+
+    const publicId = publicIdMatch[1];
+    
+    const result = await cloudinary.uploader.destroy(`thumbnails/${publicId}`);
+
+    if (result.result !== "ok") {
+      return res.status(400).json({ message: "Failed to delete image from Cloudinary" });
+    }
+    
+    await thumbnail.deleteOne();
+    res.status(200).json({ message: "Thumbnail deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting thumbnail:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
+
 export {
   uploadThumbnail,
   getThumbnails,
@@ -251,4 +288,5 @@ export {
   updateCtr,
   searchedThumbnail,
   filterThumbnail,
+  deleteThumbnail,
 };
