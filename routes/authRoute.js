@@ -18,7 +18,6 @@ router.get('/user/:id', authMiddleware, getUserDetails)
 
 router.put('/update/:id', profilePicUpload.single('profilePicture'), authMiddleware, updateProfile)
 
-
 router.get('/google', googleAuth);
 router.get('/google/callback', passport.authenticate("google", {session: false}), googleAuthCallback)
 

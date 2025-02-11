@@ -38,12 +38,12 @@ const addComment = async (req, res) => {
 const getComments = async (req, res) => {
   try {
     const {thumbnailId} = req.params;
-
+    const { page = 1, limit = 5 } = req.query;
     // Fetch comments and populate user details
     const comments = await Comment.find({ thumbnailId })
       .populate( "userId", "username profilePicture", )
-      .sort({ createdAt: -1 });
-
+      .sort({ createdAt: -1 })
+   
      res.status(200).json(comments);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
