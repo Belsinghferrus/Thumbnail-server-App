@@ -22,7 +22,7 @@ const router = express.Router();
 router.post('/upload', upload.single('imageUrl'), authMiddleware, uploadThumbnail);
 router.post('/save/:thumbnailId', authMiddleware, saveThumbnail)
 router.post('/impression/:thumbnailId',  updateImpression)
-router.post('/ctr/:thumbnailId', authMiddleware, updateCtr)
+// router.post('/ctr/:thumbnailId', authMiddleware, updateCtr)
 
 //GET
 router.get('/search/', searchedThumbnail)
@@ -36,5 +36,5 @@ router.get('/:id', authMiddleware, getThumbnailDetails);
 
 //Delete
 router.delete('/delete/:id', authMiddleware, deleteThumbnail)
-
+// router.delete('remove/:id', authMiddleware, unSaveThumbnail)
 export default router

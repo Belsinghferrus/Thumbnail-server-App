@@ -59,11 +59,18 @@ const uploadThumbnail = async (req, res) => {
 
 // Get all thumbnails for all user
 const getThumbnails = async (req, res) => {
+  
   try {
-    const thumbnails = await Thumbnail.find().populate(
+    const { page = 1, limit = 12 } = req.query;
+    const skip = (page - 1) * limit;
+    const thumbnails = await Thumbnail.find()
+    .populate(
       "user",
       "username profilePicture"
-    ).sort({ createdAt: -1 });
+    )
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(Number(limit));
     res.status(200).json(thumbnails);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -225,6 +232,8 @@ const searchedThumbnail = async(req, res) => {
 //FILTER THUMBNAIL
 const filterThumbnail = async (req, res) => {
   const {category} = req.params;
+  const { page = 1, limit = 12 } = req.query;
+  const skip = (page - 1) * limit;
   try {
     if (!category) {
       return res.status(400).json({ message: "Category is required" });
@@ -232,7 +241,9 @@ const filterThumbnail = async (req, res) => {
     const thumbnails = await Thumbnail.find({  category: category }).populate(
       "user",
       "username profilePicture"
-    );
+    ).sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(Number(limit));
     res.status(200).json({thumbnails})
   } catch (error) {
     res.status(500).json({message: "Error in filterThumbnail", error: error.message})
