@@ -19,7 +19,9 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: 'http://localhost:5173', 
+    origin: process.env.NODE_ENV === "Production" 
+    ? process.env.HOST 
+    : process.env.LOCALHOST, 
     credentials: true, 
     
   })
@@ -36,6 +38,10 @@ mongoose.connect(process.env.MONGO_URI,)
 app.use('/api/auth', authRoute);
 app.use('/api/thumbnails', thumbnailRoute);
 app.use('/api/comments',authMiddleware, commentRoute);
+
+app.get('/health',(req, res) => {
+  res.send("Health is good")
+});
 
 app.use((err, req, res, next) => {
   console.error(err);
