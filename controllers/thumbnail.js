@@ -99,7 +99,7 @@ const getUploadedThumbnails = async (req, res) => {
   try {
     const thumbnails = await Thumbnail.find({ user: req.user.id }).select(
       "_id imageUrl title"
-    );
+    ).sort({ createdAt: -1 });
     res.status(200).json(thumbnails);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -117,7 +117,7 @@ const saveThumbnail = async (req, res) => {
     const user = req.user;
 
     if (user.savedThumbnails.includes(thumbnailId)) {
-      return res.status(400).json({ message: "Thumbnail already saved" });
+      return res.status(409).json({ message: "Thumbnail already saved" });
     }
 
     thumbnail.saves += 1;
@@ -209,7 +209,7 @@ const updateCtr = async (req, res) => {
 const searchedThumbnail = async(req, res) => {
   const {query} = req.query;
   if (!query) {
-    return res.status(400).json({ message: "Search query is required" });
+    return res.status(200).json({ message: "Search query is required" });
   }
   try {
     const trimmedQuery = query.trim().toLowerCase();

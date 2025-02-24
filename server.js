@@ -17,9 +17,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
+// "http://localhost:5173",
 app.use(
   cors({
-    origin: process.env.NODE_ENV === "Production" 
+    origin: process.env.NODE_ENV !== "Production" 
     ? process.env.HOST 
     : process.env.LOCALHOST, 
     credentials: true, 
