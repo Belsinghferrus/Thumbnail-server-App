@@ -168,8 +168,9 @@ const googleAuth =  (req, res) => {
     const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth";
     const params = new URLSearchParams({
       client_id: process.env.GOOGLE_CLIENT_ID, 
-      redirect_uri: process.env.GOOGLE_CALLBACK_URI,
-
+      redirect_uri: process.env.NODE_ENV === "Production"
+      ? process.env.GOOGLE_CALLBACK_URI
+      : process.env.LOCAL_GOOGLE_CALLBACK,
       //------------------LOCAL HOST -----------
       // redirect_uri: 'http://localhost:5000/api/auth/google/callback',
       //--------------------------------------------------
@@ -196,7 +197,10 @@ const googleAuthCallback = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
       generateToken(user._id, res);
-      res.redirect(process.env.HOST);
+      res.redirect(process.env.NODE_ENV === "Production"
+        ? process.env.HOST
+        : process.env.LOCALHOST
+      );
   } catch (error) {
     res.status(500).json({message: "Error in GoogleAuth Callback", error})
   }
