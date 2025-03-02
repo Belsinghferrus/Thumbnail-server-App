@@ -24,7 +24,12 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    user = new User({ username, email, password: hashedPassword });
+    user = new User({ 
+      username, 
+      email, 
+      password: hashedPassword,
+      isOauthUser: false
+    });
 
     // Save user to database
     await user.save();
@@ -163,10 +168,13 @@ const googleAuth =  (req, res) => {
   try {
     const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth";
     const params = new URLSearchParams({
-      client_id: process.env.NODE_ENV === "Production" 
-      ? process.env.HOST 
-      : process.env.LOCALHOST, 
-      redirect_uri: 'http://localhost:5000/api/auth/google/callback',
+      client_id: process.env.GOOGLE_CLIENT_ID, 
+      redirect_uri: process.env.NODE_ENV === "Production"
+      ? process.env.GOOGLE_CALLBACK_URI
+      : process.env.LOCAL_GOOGLE_CALLBACK,
+      //------------------LOCAL HOST -----------
+      // redirect_uri: 'http://localhost:5000/api/auth/google/callback',
+      //--------------------------------------------------
       response_type: 'code',
       scope: 'profile email',
     });
@@ -190,9 +198,10 @@ const googleAuthCallback = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
       generateToken(user._id, res);
-      res.redirect(process.env.NODE_ENV === "Production" 
-        ? process.env.HOST 
-        : process.env.LOCALHOST);
+      res.redirect(process.env.NODE_ENV === "Production"
+        ? process.env.HOST
+        : process.env.LOCALHOST
+      );
   } catch (error) {
     res.status(500).json({message: "Error in GoogleAuth Callback", error})
   }
