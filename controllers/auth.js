@@ -43,6 +43,7 @@ const register = async (req, res) => {
       username: user.username,
       email: user.email,
       profilePicture: user.profilePicture,
+      isAOauthUser: false,
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
