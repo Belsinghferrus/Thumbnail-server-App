@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String},
   profilePicture: { type: String, default: '' },
+  isAOauthUser: {type: Boolean},
   savedThumbnails: [{ type: mongoose.Schema.Types.ObjectId, ref: "Thumbnail" }],
 }, { timestamps: true });
 
