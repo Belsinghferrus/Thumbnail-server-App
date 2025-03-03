@@ -20,9 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: process.env.NODE_ENV === "Production" 
-    ? process.env.HOST 
-    : process.env.LOCALHOST, 
+    origin: process.env.HOST,
     credentials: true, 
     
   })
