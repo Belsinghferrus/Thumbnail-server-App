@@ -47,7 +47,7 @@ const register = async (req, res) => {
         username: user.username,
         email: user.email,
         profilePicture: user.profilePicture || null,
-        isOauthUser: user.isOauthUser,
+        isOauthUser: false,
         createdAt: new Date().toISOString(),
       },
     };
