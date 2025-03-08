@@ -4,7 +4,7 @@ import User from "../models/userModel.js";
 import generateToken from "../lib/generateToken.js";
 import cloudinary from "../lib/cloudinary.js";
 import Thumbnail from "../models/thumbnailModel.js";
-import axios from 'axios';
+// import axios from 'axios';
 
 
 // Register a new user
@@ -40,35 +40,35 @@ const register = async (req, res) => {
     generateToken(user._id, res);
 
 
-    const webhookPayload = {
-      content: `🚀 **New User Created**`,
-      embeds: [
-        {
-          title: "User Details",
-          fields: [
-            { name: "Username", value: user.username, inline: true },
-            { name: "Email", value: user.email, inline: true },
-            { name: "OAuth User", value: user.isAOauthUser ? "Yes" : "No", inline: true },
-            { name: "Created At", value: new Date().toLocaleString(), inline: false }
-          ],
-          color: 3066993 // Optional: Hex color code (green here)
-        }
-      ]
-    };
+    // const webhookPayload = {
+    //   content: `🚀 **New User Created**`,
+    //   embeds: [
+    //     {
+    //       title: "User Details",
+    //       fields: [
+    //         { name: "Username", value: user.username, inline: true },
+    //         { name: "Email", value: user.email, inline: true },
+    //         { name: "OAuth User", value: user.isAOauthUser ? "Yes" : "No", inline: true },
+    //         { name: "Created At", value: new Date().toLocaleString(), inline: false }
+    //       ],
+    //       color: 3066993 // Optional: Hex color code (green here)
+    //     }
+    //   ]
+    // };
     
-    try {
-      const response = await axios.post(process.env.WEBHOOK_URL, webhookPayload);
-      console.log("User creation webhook sent successfully:", response.data);
-    } catch (webhookError) {
-      if (webhookError.response) {
-        console.error("Discord Webhook failed:", webhookError.response.status);
-        console.error("Response data:", webhookError.response.data);
-      } else {
-        console.error("Discord Webhook error:", webhookError.message);
-      }
-    }
+    // try {
+    //   const response = await axios.post(process.env.WEBHOOK_URL, webhookPayload);
+    //   console.log("User creation webhook sent successfully:", response.data);
+    // } catch (webhookError) {
+    //   if (webhookError.response) {
+    //     console.error("Discord Webhook failed:", webhookError.response.status);
+    //     console.error("Response data:", webhookError.response.data);
+    //   } else {
+    //     console.error("Discord Webhook error:", webhookError.message);
+    //   }
+    // }
 
-    
+
     res.status(201).json({
       message: "User Created",
       _id: user._id,
@@ -227,23 +227,23 @@ const googleAuthCallback = async (req, res) => {
     }
       generateToken(user._id, res);
 
-      const webhookPayload = {
-        event: "oauth_user_logged_in",
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          loginTime: new Date().toISOString(),
-          isOauthUser: true,
-        },
-      };
+      // const webhookPayload = {
+      //   event: "oauth_user_logged_in",
+      //   user: {
+      //     id: user._id,
+      //     username: user.username,
+      //     email: user.email,
+      //     loginTime: new Date().toISOString(),
+      //     isOauthUser: true,
+      //   },
+      // };
 
-      try {
-        await axios.post(process.env.WEBHOOK_URL, webhookPayload);
-        console.log("Webhook sent successfully");
-      } catch (webhookError) {
-        console.error("Failed to send webhook:", webhookError.message);
-      }
+      // try {
+      //   await axios.post(process.env.WEBHOOK_URL, webhookPayload);
+      //   console.log("Webhook sent successfully");
+      // } catch (webhookError) {
+      //   console.error("Failed to send webhook:", webhookError.message);
+      // }
 
       res.redirect(process.env.HOST);
   } catch (error) {

@@ -1,6 +1,6 @@
 import Thumbnail from "../models/thumbnailModel.js";
 import cloudinary from "../lib/cloudinary.js";
-import axios from 'axios';
+// import axios from 'axios';
 
 
 //Validate request
@@ -52,22 +52,22 @@ const uploadThumbnail = async (req, res) => {
       imageUrl: result.secure_url,
     });
 
-    try {
-      await axios.post(process.env.WEBHOOK_URL_IMAGE, {
-        event: "thumbnail_uploaded",
-        thumbnail: {
-          id: thumbnail._id,
-          user: thumbnail.user,
-          title: thumbnail.title,
-          description: thumbnail.description,
-          category: thumbnail.category,
-          imageUrl: thumbnail.imageUrl,
-          uploadedAt: new Date().toISOString(),
-        },
-      });
-    } catch (webhookError) {
-      console.error("Failed to send webhook:", webhookError.message);
-    }
+    // try {
+    //   await axios.post(process.env.WEBHOOK_URL_IMAGE, {
+    //     event: "thumbnail_uploaded",
+    //     thumbnail: {
+    //       id: thumbnail._id,
+    //       user: thumbnail.user,
+    //       title: thumbnail.title,
+    //       description: thumbnail.description,
+    //       category: thumbnail.category,
+    //       imageUrl: thumbnail.imageUrl,
+    //       uploadedAt: new Date().toISOString(),
+    //     },
+    //   });
+    // } catch (webhookError) {
+    //   console.error("Failed to send webhook:", webhookError.message);
+    // }
 
     await thumbnail.save();
     res.status(201).json(thumbnail);
