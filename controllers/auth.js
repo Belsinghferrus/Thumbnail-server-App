@@ -4,6 +4,8 @@ import User from "../models/userModel.js";
 import generateToken from "../lib/generateToken.js";
 import cloudinary from "../lib/cloudinary.js";
 import Thumbnail from "../models/thumbnailModel.js";
+import axios from 'axios';
+
 
 // Register a new user
 const register = async (req, res) => {
@@ -37,6 +39,26 @@ const register = async (req, res) => {
     // Generate JWT token
     generateToken(user._id, res);
 
+
+    const webhookPayload = {
+      event: "user_created",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture || null,
+        isOauthUser: user.isOauthUser,
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    try {
+      await axios.post(process.env.WEBHOOK_URL, webhookPayload);
+      console.log("User creation webhook sent successfully");
+    } catch (webhookError) {
+      console.error("Failed to send user creation webhook:", webhookError.message);
+    }
+
     res.status(201).json({
       message: "User Created",
       _id: user._id,
@@ -45,6 +67,7 @@ const register = async (req, res) => {
       profilePicture: user.profilePicture,
       isAOauthUser: false,
     });
+
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -144,7 +167,7 @@ const updateProfile = async (req, res) => {
     });
 
     if (!updatedUser) {
-      res.status(404).json({ message: "User not found" });
+      res.status(401).json({ message: "User not found" });
     }
    
     res
@@ -190,9 +213,28 @@ const googleAuthCallback = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(401).json({ message: "User not found" });
     }
       generateToken(user._id, res);
+
+      const webhookPayload = {
+        event: "oauth_user_logged_in",
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          loginTime: new Date().toISOString(),
+          isOauthUser: true,
+        },
+      };
+
+      try {
+        await axios.post(process.env.WEBHOOK_URL, webhookPayload);
+        console.log("Webhook sent successfully");
+      } catch (webhookError) {
+        console.error("Failed to send webhook:", webhookError.message);
+      }
+
       res.redirect(process.env.HOST);
   } catch (error) {
     res.status(500).json({message: "Error in GoogleAuth Callback", error})
@@ -204,7 +246,7 @@ const getUserDetails = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password -savedThumbnails');
     const thumbnails = await Thumbnail.find({user: user._id})
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(401).json({ message: "User not found" });
 
     res.status(200).json({ user, thumbnails });
   } catch (error) {
@@ -218,7 +260,7 @@ const changePassword = async(req, res) => {
 
     const user = await User.findById(req.user._id);
     
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(401).json({ message: "User not found" });
 
     if (!user.password) {
       return res.status(400).json({ message: "This account is linked to Google. Password change is not allowed." });

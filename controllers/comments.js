@@ -11,7 +11,7 @@ const addComment = async (req, res) => {
     // Check if thumbnail exists
     const thumbnail = await Thumbnail.findById(thumbnailId);
     if (!thumbnail) {
-      return res.status(404).json({ message: "Thumbnail not found" });
+      return res.status(401).json({ message: "Thumbnail not found" });
     }
 
     if (!content) {

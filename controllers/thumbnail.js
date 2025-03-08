@@ -1,5 +1,7 @@
 import Thumbnail from "../models/thumbnailModel.js";
 import cloudinary from "../lib/cloudinary.js";
+import axios from 'axios';
+
 
 //Validate request
 const validateRequest = (req) => {
@@ -50,6 +52,23 @@ const uploadThumbnail = async (req, res) => {
       imageUrl: result.secure_url,
     });
 
+    try {
+      await axios.post(process.env.WEBHOOK_URL_IMAGE, {
+        event: "thumbnail_uploaded",
+        thumbnail: {
+          id: thumbnail._id,
+          user: thumbnail.user,
+          title: thumbnail.title,
+          description: thumbnail.description,
+          category: thumbnail.category,
+          imageUrl: thumbnail.imageUrl,
+          uploadedAt: new Date().toISOString(),
+        },
+      });
+    } catch (webhookError) {
+      console.error("Failed to send webhook:", webhookError.message);
+    }
+
     await thumbnail.save();
     res.status(201).json(thumbnail);
   } catch (error) {
@@ -85,7 +104,7 @@ const getThumbnailDetails = async (req, res) => {
       "username profilePicture"
     );
     if (!thumbnail) {
-      return res.status(404).json({ message: "Thumbnail not found" });
+      return res.status(401).json({ message: "Thumbnail not found" });
     }
 
     res.status(200).json(thumbnail);
@@ -112,7 +131,7 @@ const saveThumbnail = async (req, res) => {
   try {
     const thumbnail = await Thumbnail.findById(thumbnailId);
     if (!thumbnail) {
-      return res.status(404).json({ message: "Thumbnail not found" });
+      return res.status(401).json({ message: "Thumbnail not found" });
     }
     const user = req.user;
 
@@ -137,7 +156,7 @@ const getSavedThumbnail = async (req, res) => {
   try {
     const user = req.user;
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(401).json({ message: "User not found" });
     }
     await user.populate("savedThumbnails");
     res.status(200).json(user.savedThumbnails);
@@ -152,7 +171,7 @@ const downloadThumbnail = async (req, res) => {
   try {
     const thumbnail = await Thumbnail.findById(thumbnailId);
     if (!thumbnail) {
-      return res.status(404).json({ message: "Thumbnail not found" });
+      return res.status(401).json({ message: "Thumbnail not found" });
     }
     thumbnail.downloads += 1;
     await thumbnail.save();
@@ -174,7 +193,7 @@ const updateImpression = async (req, res) => {
     const { thumbnailId } = req.params;
     const thumbnail = await Thumbnail.findById(thumbnailId);
     if (!thumbnail) {
-      return res.status(404).json({ message: "Thumbnail not found" });
+      return res.status(401).json({ message: "Thumbnail not found" });
     }
     const lastUpdatedTime = thumbnail.updatedAt;
     const timeDifference = Date.now() - new Date(lastUpdatedTime).getTime();
@@ -196,7 +215,7 @@ const updateCtr = async (req, res) => {
     const { thumbnailId } = req.params;
     const thumbnail = await Thumbnail.findById(thumbnailId);
     if (!thumbnail) {
-      return res.status(404).json({ message: "Thumbnail not found" });
+      return res.status(401).json({ message: "Thumbnail not found" });
     }
     thumbnail.ctr += 1;
     await thumbnail.save();
@@ -232,7 +251,7 @@ const searchedThumbnail = async(req, res) => {
 //FILTER THUMBNAIL
 const filterThumbnail = async (req, res) => {
   const {category} = req.params;
-  const { page = 1, limit = 12 } = req.query;
+  const { page = 1, limit = 6 } = req.query;
   const skip = (page - 1) * limit;
   try {
     if (!category) {
