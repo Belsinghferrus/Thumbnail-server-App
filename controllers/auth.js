@@ -30,7 +30,7 @@ const register = async (req, res) => {
       username, 
       email, 
       password: hashedPassword,
-      isOauthUser: false
+      isAOauthUser: false
     });
 
     // Save user to database
@@ -41,24 +41,34 @@ const register = async (req, res) => {
 
 
     const webhookPayload = {
-      event: "user_created",
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        profilePicture: user.profilePicture || null,
-        isOauthUser: false,
-        createdAt: new Date().toISOString(),
-      },
+      content: `🚀 **New User Created**`,
+      embeds: [
+        {
+          title: "User Details",
+          fields: [
+            { name: "Username", value: user.username, inline: true },
+            { name: "Email", value: user.email, inline: true },
+            { name: "OAuth User", value: user.isAOauthUser ? "Yes" : "No", inline: true },
+            { name: "Created At", value: new Date().toLocaleString(), inline: false }
+          ],
+          color: 3066993 // Optional: Hex color code (green here)
+        }
+      ]
     };
-
+    
     try {
-      await axios.post(process.env.WEBHOOK_URL, webhookPayload);
-      console.log("User creation webhook sent successfully");
+      const response = await axios.post(process.env.WEBHOOK_URL, webhookPayload);
+      console.log("User creation webhook sent successfully:", response.data);
     } catch (webhookError) {
-      console.error("Failed to send user creation webhook:", webhookError.message);
+      if (webhookError.response) {
+        console.error("Discord Webhook failed:", webhookError.response.status);
+        console.error("Response data:", webhookError.response.data);
+      } else {
+        console.error("Discord Webhook error:", webhookError.message);
+      }
     }
 
+    
     res.status(201).json({
       message: "User Created",
       _id: user._id,
